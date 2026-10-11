@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The compatibility matrix (`docs/api-contract.md`) is now backed by contract
+  cases that pass on Elasticsearch 9.5.4 and OpenSearch 3.9.0: every row has a
+  scope (MVP, next, out) and a status, MVP rows link the cases that pin them,
+  and the differences from the references are listed as divergences. Decided:
+  `query_string` and the completion suggester are in the MVP; one shard with 0
+  or 1 replicas; an index without `dynamic` behaves as `dynamic: false`.
+
 ### Added
 
 - `eloisesearch` server binary with a liveness endpoint, `GET /health`, that

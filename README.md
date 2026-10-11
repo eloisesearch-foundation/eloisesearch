@@ -9,14 +9,16 @@ type. Eloisesearch gives a Rails, Node or any HTTP-speaking application exactly 
 from a single binary that keeps your indexes on local disk.
 
 It targets a documented subset of the Elasticsearch 9.5.4 REST API and Query DSL.
-Each item will be checked against both Elasticsearch 9.5.4 and OpenSearch 3.9.0 by a
-compatibility suite before it is marked supported; that suite is being built. The
-goal: if your application or tooling already talks to one of them, point it at
+Every item of the MVP subset is pinned by contract cases that pass on both
+Elasticsearch 9.5.4 and OpenSearch 3.9.0
+([`eloisesearch-integration`](https://github.com/eloisesearch-foundation/eloisesearch-integration));
+an item is marked supported once they also pass on Eloisesearch. The goal: if your application or tooling already talks to one of them, point it at
 Eloisesearch and keep the requests you have, as long as they stay within the
 [supported subset](docs/api-contract.md).
 
-> **Status:** early development. Phase 1 (service foundation) is done; indexing,
-> persistence and search are next. The API is not stable yet. See the
+> **Status:** early development. The contract (Phase 0) and the service
+> foundation (Phase 1) are done; indexing and persistence are in progress, search
+> comes next. The API is not stable yet. See the
 > [roadmap](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md).
 
 ## Who it is for
