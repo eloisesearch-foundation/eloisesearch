@@ -34,7 +34,9 @@ build.
 - [ ] Docs updated in the same PR (`docs/`, README) when behavior, API,
       configuration or deployment changed.
 - [ ] Non-trivial features link their `docs/design-<topic>.md`.
-- [ ] No references to third-party search products.
+- [ ] `docs/api-contract.md` updated when a route, mapping or query feature changed
+      status; compatible behavior has a test against the reference.
+- [ ] Third-party product names only in compatibility contexts (see `AGENTS.md`).
 
 ## Design docs
 

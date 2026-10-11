@@ -19,7 +19,21 @@ Cases cover plain queries, phrases, exclusions, the AND operator, prefix and
 fuzzy terms, filters, browse ordering, facets, suggestions, accent folding and
 malformed or incomplete input. Exact scores are never asserted.
 
-## 2. Relevance evaluation
+## 2. Compatibility verification
+
+For every route and query feature marked Supported in
+[`api-contract.md`](api-contract.md), the integration suite sends the same request
+to Eloisesearch and to the reference servers (Elasticsearch 9.5.4 and the pinned
+OpenSearch version, run as containers in CI over the same corpus) and compares:
+
+- matching document IDs and relative order;
+- totals, facet buckets and suggestion texts;
+- response shape (field names and types) and error `type` and HTTP status.
+
+Numeric scores and timing fields are not compared. A difference is either fixed or
+recorded in the matrix as Partial with an explanation.
+
+## 3. Relevance evaluation
 
 - Keep a small judged query set with the results a user would expect.
 - Include title-only matches, overview-only matches, title-versus-overview
@@ -32,7 +46,7 @@ malformed or incomplete input. Exact scores are never asserted.
   hand-checked corpus, a query-by-query checklist is more honest than weak
   aggregate numbers.
 
-## 3. Performance and resources
+## 4. Performance and resources
 
 Benchmark only after behavior is stable, with the same fixtures, queries, hardware,
 concurrency and warm/cold conditions for every version or configuration compared.
@@ -53,7 +67,7 @@ set, repetitions and the exact scripts. Keep microbenchmarks separate from
 end-to-end HTTP measurements. Publish raw results and regressions as well as
 improvements; results are versioned evidence, not permanent truths.
 
-## 4. Reliability and lifecycle tests
+## 5. Reliability and lifecycle tests
 
 The suite must cover:
 
@@ -66,12 +80,12 @@ The suite must cover:
 - Every error matches the documented error model.
 - All of the above run in CI without external services.
 
-## 5. Release gate
+## 6. Release gate
 
 A release candidate needs all of the following. Progress is tracked in the
 [roadmap](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md).
 
-- All contract tests passing.
+- All contract and compatibility tests passing.
 - Relevance reviewed against the judged set.
 - Restart and lifecycle tests passing.
 - API docs and the feature matrix current, including unsupported features.

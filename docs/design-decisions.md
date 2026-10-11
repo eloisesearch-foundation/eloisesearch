@@ -33,8 +33,8 @@ SDKs. Rust and Tantivy are implementation choices, not evidence of performance;
 speed or footprint claims require measurements (see
 [`quality-plan.md`](quality-plan.md)).
 
-**Alternatives considered.** Adopting an existing search platform (large feature
-and operational surface, does not explore this project's hypothesis); search
+**Alternatives considered.** Running an existing distributed search platform (large
+feature and operational surface, which is what our users want to avoid); search
 embedded in the application database (different deployment boundary, does not fit
 a standalone multi-source API).
 
@@ -50,26 +50,48 @@ room for another transport later without rewriting query or index logic.
 **Consequences.** gRPC or other protocols are added only if a concrete use case or
 benchmark justifies a second public protocol.
 
-## 4. Our own versioned API contract
+## 4. API compatibility as the adoption path
 
-**Decision.** Eloisesearch defines its own API, versioned (e.g. `/v1`) and
-published as OpenAPI. There is no compatibility target with any other product.
+**Decision.** The public API is a documented subset of the **Elasticsearch 9.5.4**
+REST API and Query DSL, served at the same root paths (`PUT /{index}`,
+`/{index}/_doc/{id}`, `/_bulk`, `/{index}/_search`, ...). Every supported item is
+also verified against OpenSearch and differences are recorded. There is no `/v1`
+prefix. Eloisesearch-specific endpoints, when needed, live under
+`/_eloisesearch/` or are clearly marked (such as `GET /health`).
 
-**Why.** The API can be designed around application search, evolve on its own
-schedule, and be tested exhaustively, without inheriting someone else's surface
-area.
+**Why.** The fastest way to adopt Eloisesearch is not to learn a new API: teams
+with applications, scripts and tools written for Elasticsearch or OpenSearch
+should be able to point them at Eloisesearch and keep working, as long as they use
+the supported subset. A path prefix would break every existing client.
 
-**Consequences.** Query grammar, analysis, scoring and highlighting behavior are
-specified by our contract and its fixtures. Every supported feature needs tests;
-every unsupported construct fails predictably.
+**Consequences.**
+
+- Compatibility is bounded and versioned: [`api-contract.md`](api-contract.md)
+  lists every route, mapping feature and query feature as supported, partial,
+  planned, unsupported or out of scope. Anything outside it fails with a
+  documented error, never with silently different behavior.
+- Results are compared with the reference by document IDs, relative order,
+  totals, facets, response shape and error types, never by numeric scores.
+- Versioning follows two axes: the reference version the subset tracks, and
+  Eloisesearch's own semantic version. `GET /` reports both.
+- The product check in the official Elasticsearch clients (7.14 and later)
+  requires an `X-Elastic-Product: Elasticsearch` response header. Eloisesearch
+  does not send it, because that would present the server as another vendor's
+  product. Plain HTTP, OpenSearch clients and generic tools are the supported
+  paths; the migration guide documents client-side options. To be revisited only
+  with legal advice.
+- Third-party product names appear only where compatibility requires them: the
+  compatibility matrix, the migration guide and compatibility tests, always
+  descriptively and with the trademark notice.
 
 **Contract order.**
 
-1. Application behavior first: the movie-search fixtures.
-2. Minimum engine API next: index lifecycle and metadata, stable-ID document
-   operations, bulk writes with item-level errors, search and count, bounded
-   pagination, sort and field selection, suggestions, facets, highlighting,
-   refresh controls, health and readiness.
+1. Application behavior first: the movie-search fixtures, expressed as requests
+   in the compatible API.
+2. The minimum compatible API next: index lifecycle and mappings, stable-ID
+   document operations, bulk with item-level errors, search and count, pagination,
+   sort, `_source` filtering, the query subset, aggregations for facets,
+   highlighting, suggestions, refresh, server info and health.
 3. Each capability is labeled MVP, next phase or out of scope, and supported,
    partial or unsupported, in [`api-contract.md`](api-contract.md).
 
@@ -112,11 +134,16 @@ crash-consistency protocol and the reader refresh mechanism are specified in
 
 ## 6. One error shape
 
-**Decision.** Every failed request returns `{"error":{"type","reason"},"status"}`.
+**Decision.** Every failed request returns the reference API's envelope:
+`{"error":{"root_cause":[{"type","reason"}],"type","reason"},"status"}`. Where the
+reference has an equivalent error, the same `type` and HTTP status are used.
 
-**Why.** Clients and SDKs handle errors with one code path and branch on a stable
-`type`; humans read `reason`. Internal details (paths, panics, library messages)
-never reach clients; they are logged.
+**Why.** Existing clients already parse this shape, and SDKs handle errors with one
+code path that branches on a stable `type`; humans read `reason`. Internal details
+(paths, panics, library messages) never reach clients; they are logged.
+
+**Consequences.** Middleware errors (timeouts, for example) are converted into
+this envelope too; no layer may answer with an empty or plain-text body.
 
 ## 7. Configuration through the environment
 

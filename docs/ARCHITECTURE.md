@@ -8,7 +8,8 @@
 
 Give an application full-text search (weighted fields, phrases, exclusions,
 filters, facets, suggestions, highlighting, pagination) from a single process
-with a local data directory and a versioned HTTP/JSON API. The first use case
+with a local data directory, through a documented subset of the Elasticsearch
+9.5.4 REST API so existing applications and tools can migrate. The first use case
 it must serve end to end is a movie-search app with a Rails API and a Nuxt
 frontend.
 
@@ -35,12 +36,13 @@ Single node. No clustering, sharding or replication in the MVP.
 | Crate | Responsibility | Must not |
 | --- | --- | --- |
 | `eloisesearch-core` | Domain types (`IndexName`, …), errors, and from Phase 2 the index lifecycle, schema, document store and query execution. | Depend on axum, tokio, HTTP types or the server. Expose Tantivy types. |
-| `eloisesearch-server` | `Config` from `ELOISESEARCH_*`, tracing setup, the axum `Router`, `ApiError`, graceful shutdown. `lib.rs` holds everything testable; `main.rs` only wires config → tracing → `run`. | Contain search logic. Handlers parse, call the core, map the result. |
+| `eloisesearch-server` | `Config` from `ELOISESEARCH_*`, tracing setup, the axum `Router`, `ApiError`, graceful shutdown, and the compatibility layer: parsing reference-API requests (routes, mappings, Query DSL) into core types and rendering core results in the reference response shapes. `lib.rs` holds everything testable; `main.rs` only wires config → tracing → `run`. | Contain search logic. Handlers parse, call the core, map the result. |
 
 ## Request flow
 
-1. `TraceLayer` opens a span per request; `TimeoutLayer` aborts requests that
-   exceed `ELOISESEARCH_REQUEST_TIMEOUT_SECS` with 408.
+1. `TraceLayer` opens a span per request; the timeout layer aborts requests that
+   exceed `ELOISESEARCH_REQUEST_TIMEOUT_SECS`, and `HandleErrorLayer` turns that
+   into a 408 with the standard JSON error envelope.
 2. The router matches the route. Unknown paths go to the `not_found` fallback,
    known paths with the wrong method to `method_not_allowed`. Both return
    `ApiError`.
@@ -64,7 +66,7 @@ connections before exiting.
 | `crates/eloisesearch-core/src/error.rs` | Core error enum (`#[non_exhaustive]`). |
 | `crates/eloisesearch-server/src/config.rs` | Environment parsing; `from_lookup` is the test seam. |
 | `crates/eloisesearch-server/src/error.rs` | `ApiError` and the JSON error body. |
-| `crates/eloisesearch-server/src/routes.rs` | Router, middleware stack, handlers. |
+| `crates/eloisesearch-server/src/routes.rs` | Router, middleware stack (`with_middleware`), handlers. |
 | `crates/eloisesearch-server/tests/http.rs` | In-process HTTP tests (no socket). |
 
 ## Cross-cutting invariants

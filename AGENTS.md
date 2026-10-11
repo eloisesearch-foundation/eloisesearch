@@ -7,8 +7,10 @@ repository (Claude Code, Codex, Cursor, Gemini CLI and other AGENTS-aware tools)
 ## What this project is for
 
 Eloisesearch lets application developers add full-text search to their product
-without operating a search cluster: one binary, one data directory, a versioned
-HTTP/JSON API. The first use case it must serve end to end is a movie-search app
+without operating a search cluster: one binary, one data directory. Its API is a
+documented subset of the Elasticsearch 9.5.4 REST API and Query DSL, verified
+against OpenSearch, so teams can migrate existing applications and tools by
+pointing them at Eloisesearch. The first use case it must serve end to end is a movie-search app
 (Rails API + Nuxt frontend): weighted text search with phrases and exclusions,
 filters, facets, suggestions, highlighting and pagination, over indexes that
 survive restarts.
@@ -51,20 +53,28 @@ Run `make check` before saying a change is done. If you could not run it, say so
    core calls and maps core errors to HTTP.
 2. **Tantivy types never cross the public API.** Not in HTTP responses, not in the
    core's public signatures once Tantivy is added.
-3. **One error shape.** Every non-2xx response is
-   `{"error":{"type","reason"},"status"}`, built through `ApiError`. `type` is a
-   stable identifier; `reason` is for humans. Covered by `tests/http.rs`.
+3. **One error shape, the reference one.** Every non-2xx response is
+   `{"error":{"root_cause":[...],"type","reason"},"status"}`, built through
+   `ApiError`, including middleware failures such as timeouts. Where the reference
+   API has an equivalent error, use its `type` and status. Covered by
+   `tests/http.rs`.
 4. **Validate at the boundary, once.** Names, IDs and parameters are parsed into
    typed values (`IndexName`, `Config`) and reused. Index names are directory
    names; their rules exist to keep paths safe.
-5. **Unsupported input fails predictably.** Never silently ignore a parameter or
-   query construct the contract does not support.
+5. **Compatible or explicit.** A supported route or query feature behaves like the
+   reference (Elasticsearch 9.5.4) for the documented subset; anything else fails
+   with a documented error. Never silently ignore a parameter or query construct,
+   and never answer with different semantics. Update
+   [`docs/api-contract.md`](docs/api-contract.md) with every change.
 6. **Acknowledged writes are durable** (from Phase 2): success is returned only
    after the write is persisted; visibility follows the refresh rules in
    [`docs/design-decisions.md`](docs/design-decisions.md).
 7. **Tests are hermetic.** No real `$HOME`, no fixed ports, no network. Use
    `Config::from_lookup` instead of the process environment, temp dirs for data,
    and the router in-process (`tower::ServiceExt::oneshot`).
+8. **Routes stay at the root.** Compatible routes use the reference paths (no
+   `/v1`). Eloisesearch-only endpoints go under `/_eloisesearch/` or are marked
+   as such in the contract (like `GET /health`).
 
 ## Code style
 
@@ -86,9 +96,15 @@ Run `make check` before saying a change is done. If you could not run it, say so
   Constraints, Validation (template in the workspace: `make docs-new-design`).
 - **Write about use cases and behavior.** Docs say what problem a feature solves
   and how it behaves, then how it is built.
-- **No third-party product references.** Do not name other search products or
-  services in code, docs, tests or commit messages. Describe behavior on its own
-  terms.
+- **Third-party names only where compatibility needs them.** Elasticsearch and
+  OpenSearch may be named in the compatibility matrix, the migration guide,
+  compatibility tests and code comments that explain a compatibility rule, always
+  descriptively ("compatible with a subset of ..."), never in marketing
+  comparisons, and with the trademark notice in user-facing docs. No logos, no
+  competitor research or benchmarks against other products in this repository.
+- **Never impersonate another product.** Do not send headers or identifiers that
+  present Eloisesearch as another vendor's product (for example
+  `X-Elastic-Product`).
 - **The human decides.** Agents review, audit and draft; the maintainer approves
   merges, version bumps and tags. Never bump versions or tag without explicit
   approval.
@@ -100,11 +116,11 @@ Run `make check` before saying a change is done. If you could not run it, say so
 - [`README.md`](README.md): what it is for, quick start, reference guides.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): operational map of the code:
   crates, request flow, invariants, where things live.
-- [`docs/api-contract.md`](docs/api-contract.md): HTTP routes, document model,
-  search feature matrix, error model. The OpenAPI document will supersede the
-  route tables once published.
+- [`docs/api-contract.md`](docs/api-contract.md): compatibility matrix: reference
+  versions, routes, mappings, Query DSL subset, error model, client support. The
+  OpenAPI document will supersede the route tables once published.
 - [`docs/design-decisions.md`](docs/design-decisions.md): why the system is
-  shaped this way: engine, transport, own API contract, durability and
+  shaped this way: engine, transport, API compatibility, durability and
   visibility.
 - [`docs/quality-plan.md`](docs/quality-plan.md): fixtures, relevance
   evaluation, benchmarks, release gate.

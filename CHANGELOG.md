@@ -23,5 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   volume.
 - Index name validation in the core: lowercase letters, digits, `-` and `_`,
   up to 128 bytes.
+- Every error response includes `root_cause`, matching the error envelope of the
+  compatible search API: `{"error":{"root_cause":[...],"type","reason"},"status"}`.
+  Invalid index names are reported as `invalid_index_name_exception`.
+- Requests that exceed `ELOISESEARCH_REQUEST_TIMEOUT_SECS` get HTTP 408 with the
+  standard JSON error body (`type: request_timeout`) instead of an empty response.
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch/commits/main

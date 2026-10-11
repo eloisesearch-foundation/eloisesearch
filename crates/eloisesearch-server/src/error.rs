@@ -1,13 +1,22 @@
 //! The HTTP error model.
 //!
-//! Every error response has the same shape:
+//! Every error response has the same shape, the one used by the compatible
+//! search API (see `docs/api-contract.md`):
 //!
 //! ```json
-//! { "error": { "type": "not_found", "reason": "no route for GET /nope" }, "status": 404 }
+//! {
+//!   "error": {
+//!     "root_cause": [{ "type": "not_found", "reason": "no route for GET /nope" }],
+//!     "type": "not_found",
+//!     "reason": "no route for GET /nope"
+//!   },
+//!   "status": 404
+//! }
 //! ```
 //!
 //! `type` is a stable, machine-readable identifier; `reason` is for humans and
-//! may change between versions.
+//! may change between versions. `root_cause` lists the underlying causes; for
+//! errors without a deeper cause it repeats the error itself.
 
 use axum::Json;
 use axum::http::StatusCode;
@@ -47,6 +56,11 @@ impl ApiError {
         Self::new(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed", reason)
     }
 
+    /// 408 — the request did not finish within the configured timeout.
+    pub fn request_timeout(reason: impl Into<String>) -> Self {
+        Self::new(StatusCode::REQUEST_TIMEOUT, "request_timeout", reason)
+    }
+
     /// 500 — unexpected failure. The reason is logged, not exposed.
     pub fn internal(reason: impl std::fmt::Display) -> Self {
         tracing::error!(%reason, "internal error");
@@ -71,6 +85,14 @@ struct Body<'a> {
 
 #[derive(Serialize)]
 struct Detail<'a> {
+    root_cause: [Cause<'a>; 1],
+    #[serde(rename = "type")]
+    kind: &'a str,
+    reason: &'a str,
+}
+
+#[derive(Serialize)]
+struct Cause<'a> {
     #[serde(rename = "type")]
     kind: &'a str,
     reason: &'a str,
@@ -80,6 +102,10 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let body = Body {
             error: Detail {
+                root_cause: [Cause {
+                    kind: self.kind,
+                    reason: &self.reason,
+                }],
                 kind: self.kind,
                 reason: &self.reason,
             },
@@ -93,9 +119,22 @@ impl From<eloisesearch_core::Error> for ApiError {
     fn from(err: eloisesearch_core::Error) -> Self {
         match err {
             eloisesearch_core::Error::InvalidIndexName { .. } => {
-                Self::bad_request("invalid_index_name", err.to_string())
+                Self::bad_request("invalid_index_name_exception", err.to_string())
             }
             other => Self::internal(other),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn invalid_index_name_maps_to_400_with_compatible_type() {
+        let err = eloisesearch_core::IndexName::new("Bad Name").unwrap_err();
+        let api = ApiError::from(err);
+        assert_eq!(api.status(), StatusCode::BAD_REQUEST);
+        assert_eq!(api.kind, "invalid_index_name_exception");
     }
 }
