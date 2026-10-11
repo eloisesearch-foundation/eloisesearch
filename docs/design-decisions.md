@@ -96,6 +96,20 @@ the supported subset. A path prefix would break every existing client.
 3. Each capability is labeled MVP, next phase or out of scope, and supported,
    partial or unsupported, in [`api-contract.md`](api-contract.md).
 
+**Scope decisions (Phase 0).** Taken with the reference baselines as evidence:
+
+- Incomplete `simple_query_string` input is interpreted as the references do and
+  never fails; broken `query_string` syntax is a 400.
+- Suggestions use the completion suggester, with the application's request.
+- `query_string` is in the MVP alongside `simple_query_string`. The analysis
+  chain is the application's custom English chain; the built-in `english`
+  analyzer, `edge_ngram` and standalone `prefix`/`wildcard`/`fuzzy` come later.
+- One shard per index; `number_of_replicas` 0 or 1 is accepted, other values are
+  rejected rather than ignored.
+- No type inference: without `dynamic`, an index behaves as `dynamic: false`.
+
+Each difference from the references these create is a recorded divergence.
+
 ## 5. Durability and search visibility
 
 **Decision.** Near-real-time semantics that separate **write durability** from
