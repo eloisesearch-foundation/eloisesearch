@@ -7,9 +7,10 @@ repository (Claude Code, Codex, Cursor, Gemini CLI and other AGENTS-aware tools)
 ## What this project is for
 
 Eloisesearch lets application developers add full-text search to their product
-without operating a search cluster: one binary, one data directory. Its API is a
-documented subset of the Elasticsearch 9.5.4 REST API and Query DSL, verified
-against OpenSearch, so teams can migrate existing applications and tools by
+without operating a search cluster: one binary, one data directory. Its API targets a
+documented subset of the Elasticsearch 9.5.4 REST API and Query DSL, checked
+against Elasticsearch and OpenSearch by compatibility suites before an item is
+marked supported, so teams can migrate existing applications and tools by
 pointing them at Eloisesearch. The first use case it must serve end to end is a movie-search app
 (Rails API + Nuxt frontend): weighted text search with phrases and exclusions,
 filters, facets, suggestions, highlighting and pagination, over indexes that

@@ -5,7 +5,7 @@ reliable and performs, before claiming any of it.
 
 ## 1. Functional baseline first
 
-Behavior is captured as executable fixtures (`contracts/search-cases.json` in
+Behavior will be captured as executable fixtures (`contracts/search-cases.json` in
 `eloisesearch-integration`) over a frozen, deterministic movie corpus. For each
 case we record:
 

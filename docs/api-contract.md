@@ -2,8 +2,10 @@
 
 Eloisesearch exposes a documented subset of the **Elasticsearch 9.5.4** REST API
 and Query DSL, so applications and tools built for Elasticsearch or OpenSearch can
-switch servers with little or no code change. Every supported item is also checked
-against OpenSearch, and differences are recorded here.
+switch servers with little or no code change. An item is marked **Supported** only
+after it has been checked against both references below; differences with
+OpenSearch are recorded here. The harness that runs these checks is still being
+built (roadmap Phase 0), so no compatible route is marked Supported yet.
 
 This is a bounded, tested subset, not full compatibility. A request that uses
 anything outside it fails with a documented error; it is never silently ignored or

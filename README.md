@@ -8,10 +8,12 @@ and expect relevant results, facets, highlighted matches and suggestions as they
 type. Eloisesearch gives a Rails, Node or any HTTP-speaking application exactly that,
 from a single binary that keeps your indexes on local disk.
 
-It speaks a documented subset of the Elasticsearch 9.5.4 REST API and Query DSL,
-verified against OpenSearch as well. If your application or tooling already talks
-to one of them, point it at Eloisesearch and keep the requests you have, as long
-as they stay within the [supported subset](docs/api-contract.md).
+It targets a documented subset of the Elasticsearch 9.5.4 REST API and Query DSL.
+Each item will be checked against both Elasticsearch 9.5.4 and OpenSearch 3.9.0 by a
+compatibility suite before it is marked supported; that suite is being built. The
+goal: if your application or tooling already talks to one of them, point it at
+Eloisesearch and keep the requests you have, as long as they stay within the
+[supported subset](docs/api-contract.md).
 
 > **Status:** early development. Phase 1 (service foundation) is done; indexing,
 > persistence and search are next. The API is not stable yet. See the
