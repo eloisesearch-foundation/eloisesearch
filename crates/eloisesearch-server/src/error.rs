@@ -117,9 +117,21 @@ impl IntoResponse for ApiError {
 
 impl From<eloisesearch_core::Error> for ApiError {
     fn from(err: eloisesearch_core::Error) -> Self {
+        use eloisesearch_core::Error;
         match err {
-            eloisesearch_core::Error::InvalidIndexName { .. } => {
+            Error::InvalidIndexName { .. } => {
                 Self::bad_request("invalid_index_name_exception", err.to_string())
+            }
+            Error::IndexAlreadyExists { .. } => {
+                Self::bad_request("resource_already_exists_exception", err.to_string())
+            }
+            Error::IndexNotFound { .. } => Self::new(
+                StatusCode::NOT_FOUND,
+                "index_not_found_exception",
+                err.to_string(),
+            ),
+            Error::InvalidArgument(_) => {
+                Self::bad_request("illegal_argument_exception", err.to_string())
             }
             other => Self::internal(other),
         }
@@ -136,5 +148,38 @@ mod tests {
         let api = ApiError::from(err);
         assert_eq!(api.status(), StatusCode::BAD_REQUEST);
         assert_eq!(api.kind, "invalid_index_name_exception");
+    }
+
+    fn index(name: &str) -> eloisesearch_core::IndexName {
+        eloisesearch_core::IndexName::new(name).unwrap()
+    }
+
+    #[test]
+    fn index_lifecycle_errors_map_to_compatible_types() {
+        let dir = tempfile::tempdir().unwrap();
+        let data = eloisesearch_core::DataDir::open(dir.path()).unwrap();
+        let movies = index("movies");
+
+        let missing = ApiError::from(data.index_metadata(&movies).unwrap_err());
+        assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+        assert_eq!(missing.kind, "index_not_found_exception");
+        assert_eq!(missing.reason, "no such index [movies]");
+
+        let empty = serde_json::json!({});
+        data.create_index(&movies, empty.clone(), empty.clone())
+            .unwrap();
+        let exists = ApiError::from(
+            data.create_index(&movies, empty.clone(), empty.clone())
+                .unwrap_err(),
+        );
+        assert_eq!(exists.status(), StatusCode::BAD_REQUEST);
+        assert_eq!(exists.kind, "resource_already_exists_exception");
+
+        let bad = ApiError::from(
+            data.create_index(&index("other"), serde_json::json!([]), empty)
+                .unwrap_err(),
+        );
+        assert_eq!(bad.status(), StatusCode::BAD_REQUEST);
+        assert_eq!(bad.kind, "illegal_argument_exception");
     }
 }

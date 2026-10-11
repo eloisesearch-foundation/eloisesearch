@@ -8,6 +8,9 @@ pub mod error;
 pub mod routes;
 
 use std::io;
+use std::path::PathBuf;
+
+use eloisesearch_core::DataDir;
 
 use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
@@ -27,18 +30,23 @@ pub fn init_tracing(format: LogFormat) {
     }
 }
 
-/// Prepares the data directory and serves HTTP until a shutdown signal arrives.
+/// Opens the data directory and serves HTTP until a shutdown signal arrives.
+///
+/// The data directory stays open (and locked) until the server stops, so a
+/// second process pointed at the same directory fails at startup.
 ///
 /// # Errors
 ///
-/// Fails if the data directory cannot be created or the address cannot be bound.
+/// Fails if the data directory cannot be opened (already in use, unsupported
+/// format, unreadable metadata) or the address cannot be bound.
 pub async fn run(config: Config) -> io::Result<()> {
-    tokio::fs::create_dir_all(&config.data_dir).await?;
+    let data_dir = open_data_dir(config.data_dir.clone()).await?;
     let listener = TcpListener::bind(config.listen).await?;
     tracing::info!(
         version = eloisesearch_core::VERSION,
+        node_id = %data_dir.node().node_id,
         addr = %listener.local_addr()?,
-        data_dir = %config.data_dir.display(),
+        data_dir = %data_dir.root().display(),
         "eloisesearch listening"
     );
 
@@ -46,8 +54,17 @@ pub async fn run(config: Config) -> io::Result<()> {
         .with_graceful_shutdown(shutdown_signal())
         .await?;
 
+    drop(data_dir);
     tracing::info!("eloisesearch stopped");
     Ok(())
+}
+
+/// The core is blocking (file I/O and fsync), so it runs off the async workers.
+async fn open_data_dir(path: PathBuf) -> io::Result<DataDir> {
+    tokio::task::spawn_blocking(move || DataDir::open(path))
+        .await
+        .map_err(io::Error::other)?
+        .map_err(io::Error::other)
 }
 
 async fn shutdown_signal() {
