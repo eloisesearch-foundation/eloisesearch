@@ -250,8 +250,12 @@ Each step is one pull request with its tests and docs; each commit passes
 `make check`.
 
 1. **Storage layout and index lifecycle** (core): `DataDir`, atomic metadata
-   writes, create, open, delete, startup cleanup. Tests with temp dirs and a
-   fault-injecting file layer.
+   writes, create, open, delete, startup cleanup. Tests with temp dirs. *Done.*
+   The lifecycle only relies on rename and directory fsync, so its crash windows
+   are tested by leaving `.creating-*` / `.deleting-*` directories behind and
+   reopening; the fault-injecting file layer moves to step 2, where partial
+   writes matter. Deletion removes the renamed directory synchronously until
+   step 3 adds writer threads to stop first.
 2. **WAL** (core): record codec, append, group sync, roll-over, reader with
    torn-tail and corruption handling, truncation. Property tests for the codec;
    fault-injection tests for partial writes.
