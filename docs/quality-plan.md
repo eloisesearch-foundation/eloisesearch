@@ -55,22 +55,25 @@ improvements; results are versioned evidence, not permanent truths.
 
 ## 4. Reliability and lifecycle tests
 
-- [ ] Create an index; index, retrieve, update and delete documents.
-- [ ] Behavior after graceful restart and after abrupt termination.
-- [ ] Write visibility under each `refresh` mode.
-- [ ] Duplicate IDs, missing IDs, invalid schemas, malformed queries.
-- [ ] Pagination boundaries and deterministic tie-breaking.
-- [ ] Partial failure in bulk writes.
-- [ ] Every error matches the documented error model.
-- [ ] All of the above run in CI without external services.
+The suite must cover:
+
+- Create an index; index, retrieve, update and delete documents.
+- Behavior after graceful restart and after abrupt termination.
+- Write visibility under each `refresh` mode.
+- Duplicate IDs, missing IDs, invalid schemas, malformed queries.
+- Pagination boundaries and deterministic tie-breaking.
+- Partial failure in bulk writes.
+- Every error matches the documented error model.
+- All of the above run in CI without external services.
 
 ## 5. Release gate
 
-A release candidate needs:
+A release candidate needs all of the following. Progress is tracked in the
+[roadmap](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md).
 
-- [ ] All contract tests passing.
-- [ ] Relevance reviewed against the judged set.
-- [ ] Restart and lifecycle tests passing.
-- [ ] API docs and the feature matrix current, including unsupported features.
-- [ ] A reproducible benchmark report with environment details.
-- [ ] Known limitations and operational requirements documented.
+- All contract tests passing.
+- Relevance reviewed against the judged set.
+- Restart and lifecycle tests passing.
+- API docs and the feature matrix current, including unsupported features.
+- A reproducible benchmark report with environment details.
+- Known limitations and operational requirements documented.
