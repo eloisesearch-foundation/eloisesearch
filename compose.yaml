@@ -1,0 +1,14 @@
+services:
+  eloisesearch:
+    build: .
+    image: eloisesearch:dev
+    ports:
+      - "${ELOISESEARCH_PORT:-7700}:7700"
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+    volumes:
+      - eloisesearch-data:/var/lib/eloisesearch
+    restart: unless-stopped
+
+volumes:
+  eloisesearch-data:
