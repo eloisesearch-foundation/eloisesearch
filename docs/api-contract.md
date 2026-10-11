@@ -74,10 +74,10 @@ Every non-2xx response uses the same envelope as the reference API:
 | `method_not_allowed` | 405 | Known route, unsupported method. | **Supported** |
 | `request_timeout` | 408 | Request exceeded `ELOISESEARCH_REQUEST_TIMEOUT_SECS`. | **Supported** |
 | `internal_error` | 500 | Unexpected failure; details are logged, never returned. | **Supported** |
-| `index_not_found_exception` | 404 | Index does not exist. | Planned |
-| `resource_already_exists_exception` | 400 | Creating an index that already exists. | Planned |
+| `index_not_found_exception` | 404 | Index does not exist. | Planned (mapped in the server; exposed with the index routes) |
+| `resource_already_exists_exception` | 400 | Creating an index that already exists. | Planned (mapped in the server; exposed with the index routes) |
 | `version_conflict_engine_exception` | 409 | `op_type=create` or `_create` for an ID that exists. | Planned |
-| `parsing_exception`, `illegal_argument_exception` | 400 | Malformed or unsupported request body, query or parameter. | Planned |
+| `parsing_exception`, `illegal_argument_exception` | 400 | Malformed or unsupported request body, query or parameter. | Planned (`illegal_argument_exception` mapped in the server) |
 
 Missing documents follow the reference per route (for example `"found": false` on
 get).
