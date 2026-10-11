@@ -19,7 +19,13 @@ the matrix and the reasoning behind it.
 | Reference | Version | Role |
 | --- | --- | --- |
 | Elasticsearch REST API and Query DSL | 9.5.4 | Primary reference for every supported route and query feature. |
-| OpenSearch REST API | To be pinned (roadmap, Phase 0) | Each supported item is verified against it; differences are listed per item. |
+| OpenSearch REST API | 3.9.0 | Each supported item is verified against it; differences are listed per item. |
+
+Reference versions are pinned so compatibility tests are reproducible
+(container images `docker.elastic.co/elasticsearch/elasticsearch:9.5.4` and
+`opensearchproject/opensearch:3.9.0`). Moving a reference to a newer release is a
+deliberate change: re-run the compatibility suite, update this table and record
+any new differences.
 
 ## Status legend
 
@@ -70,6 +76,7 @@ Every non-2xx response uses the same envelope as the reference API:
 | `internal_error` | 500 | Unexpected failure; details are logged, never returned. | **Supported** |
 | `index_not_found_exception` | 404 | Index does not exist. | Planned |
 | `resource_already_exists_exception` | 400 | Creating an index that already exists. | Planned |
+| `version_conflict_engine_exception` | 409 | `op_type=create` or `_create` for an ID that exists. | Planned |
 | `parsing_exception`, `illegal_argument_exception` | 400 | Malformed or unsupported request body, query or parameter. | Planned |
 
 Missing documents follow the reference per route (for example `"found": false` on
@@ -84,13 +91,15 @@ get).
 | Cluster health | `GET /_cluster/health` | Planned | Single node; `green` once indexes are open and recovery is complete. |
 | Create index | `PUT /{index}` | Planned | `settings` (analysis) and `mappings` from the subset below; unknown settings are rejected. |
 | Inspect, delete, exists | `GET`, `DELETE`, `HEAD /{index}` | Planned | |
-| Index or replace document | `PUT /{index}/_doc/{id}` | Planned | Stable IDs; `refresh=false`, `true` or `wait_for`. |
+| Index or replace document | `PUT /{index}/_doc/{id}` | Planned | Stable IDs; `refresh=false`, `true` or `wait_for`. Durability and visibility rules: [`design-persistence.md`](design-persistence.md). |
 | Index with generated ID | `POST /{index}/_doc` | Planned | |
+| Create only | `PUT /{index}/_create/{id}`, `op_type=create` | Planned | 409 if the ID exists. |
 | Get, delete document | `GET`, `DELETE /{index}/_doc/{id}` | Planned | `_source` filtering on get. |
 | Bulk | `POST /_bulk`, `POST /{index}/_bulk` | Planned | NDJSON `index`, `create`, `delete` actions; per-item results and errors; `refresh`. |
 | Search | `GET`, `POST /{index}/_search` | Planned | Query DSL subset below, `from`/`size`, `sort`, `_source`, `aggs`, `highlight`, `suggest`. |
 | Count | `GET`, `POST /{index}/_count` | Planned | Same query subset as search. |
 | Refresh | `POST /{index}/_refresh` | Planned | |
+| Update APIs, by-query APIs, `if_seq_no`/`if_primary_term`/`version` parameters, `routing` | | Unsupported (Phase 2) | Documented error; revisit after the MVP. |
 | Everything else | | Unsupported | Documented error. Eloisesearch-specific additions, if any, live under `/_eloisesearch/`. |
 
 Routes are served at the root, as in the reference API, so existing clients work
