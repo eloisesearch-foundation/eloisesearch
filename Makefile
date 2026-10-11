@@ -1,8 +1,12 @@
 .DEFAULT_GOAL := help
-.PHONY: help build run test fmt fmt-check lint check docker-build docker-up docker-down
+.PHONY: help build run test fmt fmt-check lint changelog-check audit check docker-build docker-up docker-down
+
+# Local settings for `make run` (see .env.example). The binary does not read .env itself.
+-include .env
+export
 
 help: ## List available targets
-	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-13s %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-16s %s\n", $$1, $$2}'
 
 build: ## Build the server (debug)
 	cargo build
@@ -22,7 +26,13 @@ fmt-check: ## Check formatting
 lint: ## Clippy with warnings as errors
 	cargo clippy --all-targets -- -D warnings
 
-check: fmt-check lint test ## Everything CI runs
+changelog-check: ## Validate CHANGELOG.md structure
+	scripts/check-changelog.sh
+
+audit: ## Check dependencies for security advisories (needs cargo-audit)
+	cargo audit
+
+check: fmt-check lint test changelog-check ## What CI runs (audit and MSRV run in CI only)
 
 docker-build: ## Build the container image
 	docker build -t eloisesearch:dev .
