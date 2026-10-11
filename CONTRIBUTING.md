@@ -28,6 +28,8 @@ build.
 
 ## Checklist
 
+- [ ] Work is on a `<type>/<topic>` branch, in logical commits that each pass
+      `make check`.
 - [ ] `make check` passes locally.
 - [ ] Every new guarantee has a test that fails without the change.
 - [ ] User-visible changes have a `CHANGELOG.md` entry under `## [Unreleased]`.
@@ -58,8 +60,20 @@ users: what changed for them, in the past tense. `scripts/check-changelog.sh`
 rejects a missing `[Unreleased]` section and repeated category headings within a
 section. Released sections are never edited.
 
-## Commits
+## Branches, commits and pull requests
+
+The full rules are in [`AGENTS.md`](AGENTS.md#git-workflow-branches-grouped-commits-pull-requests).
+In short:
+
+```bash
+git switch main && git pull --ff-only
+git switch -c feat/<topic>                 # one branch per roadmap item
+# ... work, then commit in logical groups, each passing `make check`:
+git commit -m "test: ..."  &&  git commit -m "feat(core): ..."  &&  git commit -m "docs: ..."
+git push -u origin feat/<topic>
+gh pr create --fill --draft                # body follows the PR template
+```
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) prefixes
-(`feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`). One logical change per
-commit.
+(`feat`, `fix`, `docs`, `test`, `refactor`, `ci`, `chore`). Never commit
+directly to `main`; the maintainer reviews and merges without squashing.
