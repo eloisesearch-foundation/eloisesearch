@@ -19,7 +19,13 @@ the matrix and the reasoning behind it.
 | Reference | Version | Role |
 | --- | --- | --- |
 | Elasticsearch REST API and Query DSL | 9.5.4 | Primary reference for every supported route and query feature. |
-| OpenSearch REST API | To be pinned (roadmap, Phase 0) | Each supported item is verified against it; differences are listed per item. |
+| OpenSearch REST API | 3.9.0 | Each supported item is verified against it; differences are listed per item. |
+
+Reference versions are pinned so compatibility tests are reproducible
+(container images `docker.elastic.co/elasticsearch/elasticsearch:9.5.4` and
+`opensearchproject/opensearch:3.9.0`). Moving a reference to a newer release is a
+deliberate change: re-run the compatibility suite, update this table and record
+any new differences.
 
 ## Status legend
 

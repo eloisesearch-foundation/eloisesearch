@@ -23,8 +23,8 @@ malformed or incomplete input. Exact scores are never asserted.
 
 For every route and query feature marked Supported in
 [`api-contract.md`](api-contract.md), the integration suite sends the same request
-to Eloisesearch and to the reference servers (Elasticsearch 9.5.4 and the pinned
-OpenSearch version, run as containers in CI over the same corpus) and compares:
+to Eloisesearch and to the reference servers (Elasticsearch 9.5.4 and OpenSearch
+3.9.0, run as containers in CI over the same corpus) and compares:
 
 - matching document IDs and relative order;
 - totals, facet buckets and suggestion texts;

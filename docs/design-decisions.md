@@ -55,7 +55,7 @@ benchmark justifies a second public protocol.
 **Decision.** The public API is a documented subset of the **Elasticsearch 9.5.4**
 REST API and Query DSL, served at the same root paths (`PUT /{index}`,
 `/{index}/_doc/{id}`, `/_bulk`, `/{index}/_search`, ...). Every supported item is
-also verified against OpenSearch and differences are recorded. There is no `/v1`
+also verified against **OpenSearch 3.9.0** and differences are recorded. There is no `/v1`
 prefix. Eloisesearch-specific endpoints, when needed, live under
 `/_eloisesearch/` or are clearly marked (such as `GET /health`).
 
