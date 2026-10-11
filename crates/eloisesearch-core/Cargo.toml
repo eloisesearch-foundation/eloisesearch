@@ -9,11 +9,15 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
+fs4 = "1.1.0"
 serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
+uuid = { version = "1.26.1", features = ["v4"] }
 
 [dev-dependencies]
 serde_json.workspace = true
+tempfile.workspace = true
 
 [lints]
 workspace = true
