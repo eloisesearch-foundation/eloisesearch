@@ -1,6 +1,6 @@
 # Design: Persistence and search visibility
 
-- **Status:** Draft
+- **Status:** Accepted (eloisesearch#2)
 - **Date:** 2026-10-11
 - **Roadmap:** Phase 2, indexing and persistence ([ROADMAP-MVP.md](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md))
 
