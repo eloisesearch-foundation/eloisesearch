@@ -154,6 +154,9 @@ someone else is using, tag or bump versions without explicit approval.
 - [`docs/design-decisions.md`](docs/design-decisions.md): why the system is
   shaped this way: engine, transport, API compatibility, durability and
   visibility.
+- [`docs/design-persistence.md`](docs/design-persistence.md): storage layout,
+  WAL, durability, refresh and flush, realtime GET, recovery (Phase 2). Read it
+  before touching anything that writes to the data directory.
 - [`docs/quality-plan.md`](docs/quality-plan.md): fixtures, relevance
   evaluation, benchmarks, release gate.
 - [`docs/configuration.md`](docs/configuration.md): every environment variable.

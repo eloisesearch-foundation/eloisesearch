@@ -128,9 +128,8 @@ the supported subset. A path prefix would break every existing client.
   the successful items searchable.
 - Recovery is exercised after both graceful shutdown and abrupt termination.
 
-**Open.** WAL record format, sync policy, checkpoint and compaction algorithm,
-crash-consistency protocol and the reader refresh mechanism are specified in
-`design-persistence.md` before Phase 2 code starts.
+**Design.** WAL record format, sync policy, checkpoints, recovery and the
+refresh mechanism are specified in [`design-persistence.md`](design-persistence.md).
 
 ## 6. One error shape
 
