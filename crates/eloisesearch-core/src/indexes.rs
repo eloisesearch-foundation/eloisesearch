@@ -333,11 +333,11 @@ mod tests {
                 indexes.join(format!("{CREATING_PREFIX}{}", meta.uuid)),
             )
             .unwrap();
-            assert!(dir.list_indexes().unwrap().is_empty());
+            assert_eq!(dir.list_indexes().unwrap(), Vec::<IndexName>::new());
             assert!(!dir.index_exists(&name("movies")));
         }
         let dir = DataDir::open(tmp.path()).unwrap();
-        assert!(dir.list_indexes().unwrap().is_empty());
+        assert_eq!(dir.list_indexes().unwrap(), Vec::<IndexName>::new());
         assert_eq!(fs::read_dir(tmp.path().join("indexes")).unwrap().count(), 0);
         dir.create_index(&name("movies"), Value::Null, Value::Null)
             .unwrap();
