@@ -5,6 +5,7 @@
 
 use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, MutexGuard};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use fs4::{FileExt, TryLockError};
@@ -41,6 +42,8 @@ pub struct NodeMetadata {
 pub struct DataDir {
     root: PathBuf,
     node: NodeMetadata,
+    /// Serializes index creation and deletion within this process.
+    lifecycle: Mutex<()>,
     _lock: File,
 }
 
@@ -73,6 +76,7 @@ impl DataDir {
         let data_dir = Self {
             root,
             node,
+            lifecycle: Mutex::new(()),
             _lock: lock,
         };
         data_dir.remove_interrupted_operations()?;
@@ -89,7 +93,15 @@ impl DataDir {
         &self.node
     }
 
-    fn indexes_dir(&self) -> PathBuf {
+    pub(crate) fn lock_lifecycle(&self) -> MutexGuard<'_, ()> {
+        // A panic while holding the guard leaves no partial state on disk
+        // (operations are rename-based), so a poisoned lock is safe to reuse.
+        self.lifecycle
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    pub(crate) fn indexes_dir(&self) -> PathBuf {
         self.root.join(INDEXES_DIR)
     }
 
