@@ -105,7 +105,7 @@ Every non-2xx response uses the same envelope as the reference API:
 | `version_conflict_engine_exception` | 409 | `_create` or `op_type=create` for an ID that exists, as a whole request or a bulk item. | MVP | Specified | [`documents`](https://github.com/eloisesearch-foundation/eloisesearch-integration/blob/main/contracts/cases/documents.json) |
 | `search_phase_execution_exception` | 400 | Broken `query_string` syntax. | MVP | Specified | [`query-string`](https://github.com/eloisesearch-foundation/eloisesearch-integration/blob/main/contracts/cases/query-string.json) |
 | Malformed JSON body | 400 | Body is not valid JSON; the type is not part of the contract (D-002). | MVP | Partial | [`index-lifecycle`](https://github.com/eloisesearch-foundation/eloisesearch-integration/blob/main/contracts/cases/index-lifecycle.json) |
-| Strict dynamic mapping violation | 400 | A document has a field the `strict` mapping does not declare. | MVP | Specified | [`mappings`](https://github.com/eloisesearch-foundation/eloisesearch-integration/blob/main/contracts/cases/mappings.json) |
+| `strict_dynamic_mapping_exception` | 400 | A document has a field the `strict` mapping does not declare. | MVP | Specified | [`mappings`](https://github.com/eloisesearch-foundation/eloisesearch-integration/blob/main/contracts/cases/mappings.json) |
 
 Missing documents follow the reference per route: `GET` answers 404 with
 `"found": false`, `DELETE` answers 404 with `"result": "not_found"`, and neither
